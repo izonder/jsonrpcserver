@@ -1,0 +1,29 @@
+{
+  "name": "jsonrpcserver",
+  "version": "1.0.0",
+  "description": "JSON-RPC Server (http://www.jsonrpc.org/specification) with endpoints implementation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izonder/jsonrpcserver.git"
+  },
+  "keywords": [
+    "json",
+    "json-rpc",
+    "json-rpc server",
+    "server",
+    "npm"
+  ],
+  "author": {
+    "name": "Dmitry Morgachev",
+    "email": "izonder@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/izonder/jsonrpcserver/issues"
+  },
+  "homepage": "https://github.com/izonder/jsonrpcserver#readme"
+}
