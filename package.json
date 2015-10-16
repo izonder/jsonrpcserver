@@ -1,6 +1,6 @@
 {
   "name": "jsonrpcserver",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JSON-RPC Server (http://www.jsonrpc.org/specification) with endpoints implementation",
   "main": "index.js",
   "scripts": {

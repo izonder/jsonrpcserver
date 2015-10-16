@@ -14,6 +14,7 @@ module.exports = {
     "E_NO_BATCH_32002":             {httpCode: 500, response: {code: -32002, message: "Server error", data: "Batch requests not implemented"}, name: "E_NO_BATCH_32002"}, //TODO: remove when batch would implemented
     "E_INVALID_CONTENT_TYPE_32003": {httpCode: 500, response: {code: -32003, message: "Server error", data: "Incorrect Content-Type"}, name: "E_INVALID_CONTENT_TYPE_32003"},
 
+    "E_NOTIFICATION":               {httpCode: 204, response: null, name: "E_NOTIFICATION"},
     "E_DISALLOWED_REQUEST_METHOD":  {httpCode: 405, response: null, name: "E_DISALLOWED_REQUEST_METHOD"},
     "E_TIMEOUT":                    {httpCode: 504, response: null, name: "E_TIMEOUT"}
 };

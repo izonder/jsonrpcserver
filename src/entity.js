@@ -76,7 +76,7 @@ RpcEntity.prototype.parseRequestData = function()
         content = JSON.parse(this.raw.join(''));
     }
     catch(e) {
-        this.logger.warn('JSON-RPC entity: request parse error:', this.raw.join(''));
+        this.logger.warn('JSON-RPC entity: request parse error:', this.raw.join('') || '[empty request data]');
     }
 
     this.data = {
@@ -155,16 +155,13 @@ RpcEntity.prototype.processResponse = function(error, data)
     }
 
     //Result
-    else if(data) {
+    else {
         response = {
             jsonrpc: "2.0",
             result: data,
             id: idField
         }
     }
-
-    //Notifications
-    else httpCode = 204;
 
     //Send response
     this.getResponse().writeHead(httpCode, headers);
