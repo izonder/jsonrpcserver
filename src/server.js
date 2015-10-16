@@ -189,10 +189,10 @@ RpcServer.prototype.checkRequest = function(uuid)
     else if(!this.checkParams(request.url.path, request.content.method, request.content.params)) error = RpcErrors.E_INVALID_PARAMS_32602;
 
     //if notification
-    if(request.content && !request.content.hasOwnProperty('id')) isNotification = RpcErrors.E_NOTIFICATION;
+    if(request.content && !request.content.hasOwnProperty('id')) isNotification = true;
 
     if(!error) this.callMethod(uuid, request.url.path, request.content.method, request.content.params);
-    if(error || isNotification) this.processResponse(uuid, error || isNotification);
+    if(error || isNotification) this.processResponse(uuid, error);
 };
 
 /**

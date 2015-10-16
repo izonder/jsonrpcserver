@@ -155,13 +155,16 @@ RpcEntity.prototype.processResponse = function(error, data)
     }
 
     //Result
-    else {
+    else if(! (!idField && (typeof idField == 'object'))) { //idField != null
         response = {
             jsonrpc: "2.0",
             result: data,
             id: idField
         }
     }
+
+    //Notification
+    else httpCode = 204;
 
     //Send response
     this.getResponse().writeHead(httpCode, headers);
