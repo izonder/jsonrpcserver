@@ -4,7 +4,7 @@ var http = require('http'),
     url = require('url'),
     util = require('util'),
     EventEmitter = require('events').EventEmitter,
-    RpcErrors = require('./errors');
+    RpcErrors = require('./../errors');
 
 /**
  * Improving request entity
@@ -15,7 +15,7 @@ var http = require('http'),
  * @param cleaner
  * @constructor
  */
-function RpcEntity(logger, request, response, timeout, cleaner)
+function HttpEntity(logger, request, response, timeout, cleaner)
 {
     this.raw = [];
     this.data = {};
@@ -27,7 +27,6 @@ function RpcEntity(logger, request, response, timeout, cleaner)
     this.cleaner = cleaner;
 
     if(this.validate()) {
-        var data = [];
         this.request.on('data', this.onChunk.bind(this));
         this.request.on('end', this.parseRequestData.bind(this));
 
@@ -38,13 +37,13 @@ function RpcEntity(logger, request, response, timeout, cleaner)
     }
 }
 
-util.inherits(RpcEntity, EventEmitter);
+util.inherits(HttpEntity, EventEmitter);
 
 /**
  * Validate params
  * @returns {boolean}
  */
-RpcEntity.prototype.validate = function()
+HttpEntity.prototype.validate = function()
 {
     if(! this.request instanceof http.IncomingMessage) this.request = null;
     if(! this.response instanceof http.ServerResponse) this.response = null;
@@ -61,7 +60,7 @@ RpcEntity.prototype.validate = function()
  * On stream chunk callback
  * @param chunk
  */
-RpcEntity.prototype.onChunk = function(chunk)
+HttpEntity.prototype.onChunk = function(chunk)
 {
     this.raw.push(chunk);
 };
@@ -69,7 +68,7 @@ RpcEntity.prototype.onChunk = function(chunk)
 /**
  * Parse request payload
  */
-RpcEntity.prototype.parseRequestData = function()
+HttpEntity.prototype.parseRequestData = function()
 {
     var content = undefined;
     try{
@@ -96,7 +95,7 @@ RpcEntity.prototype.parseRequestData = function()
  * Request getter
  * @returns {*}
  */
-RpcEntity.prototype.getRequest = function()
+HttpEntity.prototype.getRequest = function()
 {
     return this.data;
 };
@@ -105,7 +104,7 @@ RpcEntity.prototype.getRequest = function()
  * Response getter
  * @returns {*}
  */
-RpcEntity.prototype.getResponse = function()
+HttpEntity.prototype.getResponse = function()
 {
     return this.response;
 };
@@ -113,7 +112,7 @@ RpcEntity.prototype.getResponse = function()
 /**
  * Entity handle error
  */
-RpcEntity.prototype.entityTimeout = function()
+HttpEntity.prototype.entityTimeout = function()
 {
     this.logger.warn('JSON-RPC entity: Entity timed out:', this.data);
     this.processResponse(RpcErrors.E_TIMEOUT);
@@ -124,7 +123,7 @@ RpcEntity.prototype.entityTimeout = function()
  * @param error
  * @param data
  */
-RpcEntity.prototype.processResponse = function(error, data)
+HttpEntity.prototype.processResponse = function(error, data)
 {
     var httpCode = 200,
         response = undefined,
@@ -167,16 +166,27 @@ RpcEntity.prototype.processResponse = function(error, data)
     else httpCode = 204;
 
     //Send response
-    this.getResponse().writeHead(httpCode, headers);
-    this.getResponse().end(JSON.stringify(response));
+    this.sendResponse(httpCode, headers, response);
 
     this.destroy();
 };
 
 /**
+ * Send response
+ * @param httpCode
+ * @param headers
+ * @param payload
+ */
+HttpEntity.prototype.sendResponse = function(httpCode, headers, payload)
+{
+    this.getResponse().writeHead(httpCode, headers);
+    this.getResponse().end(JSON.stringify(payload));
+};
+
+/**
  * Destroying of the entity
  */
-RpcEntity.prototype.destroy = function()
+HttpEntity.prototype.destroy = function()
 {
     this.request = null;
     this.response = null;
@@ -186,4 +196,4 @@ RpcEntity.prototype.destroy = function()
     this.cleaner = null;
 };
 
-module.exports = RpcEntity;
+module.exports = HttpEntity;

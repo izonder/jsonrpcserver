@@ -10,6 +10,8 @@ $ npm install jsonrpcserver --save
 
 # how to use
 
+You can instantiate HTTP-server (default usage):
+
 ```
 var logger = require('mylogger'),
     API = require('myapi'),
@@ -55,6 +57,76 @@ rpcServerInstance.register('/my/new/endpoint', {
 rpcServerInstance.init({
     handler: 80,
     timeout: 10
+});
+```
+
+Or you can use jsonrpcserver as proxy:
+
+```
+var logger = require('mylogger'),
+    API = require('myapi'),
+    JsonRpcServer = require('jsonrpcserver');
+    
+var rpcServerInstance = new JsonRpcServer(logger); //logger is an optional one
+
+...
+
+rpcServerInstance.register('/my/new/endpoint', {
+    "context": new API(),
+    "map": {
+        "testMethod": {
+            "handler": "test",
+            "params": [
+                {
+                    "type": "string",
+                    "required": true
+                }
+            ]
+        },
+        "yetAnotherMethod": {
+            "handler": function(options, cb) {
+                (typeof cb == 'function') && cb(null, options);
+            },
+            "params": {
+                "first": {
+                    "type": "number",
+                    "required": true
+                },
+                "second": {
+                    "type": "any",
+                    "required": false,
+                    "default": "Foo"
+                }
+            }
+        }
+    }
+});
+
+...
+
+// proxy my request 
+var request = {
+    method: "yetAnotherMethod",
+    params: {
+        first: 1,
+        second: "Bar"
+    },
+    id: 1
+};
+rpcServerInstance.proxy('/my/new/endpoint', request, function(response) {
+    console.log(response);
+    
+    //  {
+    //      httpCode: 200,
+    //      headers: {
+    //          'Content-Type': 'application/json-rpc'
+    //      },
+    //      payload: {
+    //          jsonrpc: '2.0',
+    //          result: { ok: 1 },
+    //          id: 1
+    //      }
+    //  }
 });
 ```
 
@@ -106,6 +178,12 @@ You can use `register` method (as well as `unload`) at any time in code, definit
 ## `unload (endpoint)` - unload the endpoint
 
 * `endpoint` - <string> - endpoint URI that would be unloaded 
+
+## `proxy (endpoint, payload, callback)` - emulate the request
+
+* `endpoint` - <string> - endpoint URI that would be unloaded 
+* `payload` - <object> - request object according to JSON-RPC 2.0 Specification 
+* `callback` - <callable> - callback that handles the response
 
 ## `init (configuration)` - instantiate the server
 

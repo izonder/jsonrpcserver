@@ -5,7 +5,7 @@
  */
 module.exports = {
     "E_PARSE_ERROR_32700":          {httpCode: 500, response: {code: -32700, message: "Parse error"}, name: "E_PARSE_ERROR_32700"},
-    "E_INVALID_REQUEST_32600":      {httpCode: 400, response: {code: -32600, message: "Invalid Request"}, name: "E_INVALID_REQUEST_32600"},
+    "E_INVALID_REQUEST_32600":      {httpCode: 400, response: {code: -32600, message: "Invalid request"}, name: "E_INVALID_REQUEST_32600"},
     "E_METHOD_NOT_FOUND_32601":     {httpCode: 404, response: {code: -32601, message: "Method not found"}, name: "E_METHOD_NOT_FOUND_32601"},
     "E_INVALID_PARAMS_32602":       {httpCode: 500, response: {code: -32602, message: "Invalid params"}, name: "E_INVALID_PARAMS_32602"},
     "E_INTERNAL_ERROR_32603":       {httpCode: 500, response: {code: -32603, message: "Internal error"}, name: "E_INTERNAL_ERROR_32603"},

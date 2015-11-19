@@ -3,7 +3,8 @@
 var http = require('http'),
     https = require('https'),
     fs = require('fs'),
-    RpcEntity = require('./entity'),
+    HttpEntity = require('./entities/http_entity'),
+    ProxyEntity = require('./entities/proxy_entity'),
     RpcErrors = require('./errors');
 
 /**
@@ -153,8 +154,34 @@ RpcServer.prototype.isValidMap = function(map)
 RpcServer.prototype.handleRequest = function(request, response)
 {
     var uuid = this.generateUuid();
-    this.entities[uuid] = new RpcEntity(this.logger, request, response, this.options.timeout || this.defaults.timeout, this.cleanup.bind(this, uuid));
+    this.entities[uuid] = new HttpEntity(this.logger, request, response, this.options.timeout || this.defaults.timeout, this.cleanup.bind(this, uuid));
     this.entities[uuid].on('ready', this.checkRequest.bind(this, uuid));
+};
+
+/**
+ * Proxy (emulate) request (may uses without server instantiate)
+ * @param endpoint
+ * @param request
+ * @param cb
+ */
+RpcServer.prototype.proxy = function(endpoint, request, cb)
+{
+    var payload = (typeof request == 'object' && request) || {};
+    payload.jsonrpc || (payload.jsonrpc = '2.0');
+
+    var uuid = this.generateUuid(),
+        requestObject = {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json-rpc'
+            },
+            payload: payload,
+            url: {
+                path: endpoint
+            }
+        };
+    this.entities[uuid] = new ProxyEntity(this.logger, requestObject, cb, this.options.timeout || this.defaults.timeout, this.cleanup.bind(this, uuid));
+    this.checkRequest(uuid);
 };
 
 /**
@@ -188,11 +215,9 @@ RpcServer.prototype.checkRequest = function(uuid)
     //check params
     else if(!this.checkParams(request.url.path, request.content.method, request.content.params)) error = RpcErrors.E_INVALID_PARAMS_32602;
 
-    //if notification
-    if(request.content && !request.content.hasOwnProperty('id')) isNotification = true;
-
+    //call method or process response with error
     if(!error) this.callMethod(uuid, request.url.path, request.content.method, request.content.params);
-    if(error || isNotification) this.processResponse(uuid, error);
+    else this.processResponse(uuid, error);
 };
 
 /**
@@ -326,7 +351,7 @@ RpcServer.prototype.callMethod = function(uuid, endpoint, method, params)
     var context = this.endpoints[endpoint] && this.endpoints[endpoint].context,
         handler = this.endpoints[endpoint] && this.endpoints[endpoint].map[method] && this.endpoints[endpoint].map[method].handler;
 
-    if(!this.entities[uuid]) this.logger.warn('JSON-RPC server: unknown consumer');
+    if(!this.entities[uuid]) this.logger.warn('JSON-RPC server: attempt to call method for unknown consumer');
     else {
         if(context && (typeof context == 'object')) {
             var callback = null;
@@ -357,7 +382,7 @@ RpcServer.prototype.callMethod = function(uuid, endpoint, method, params)
 RpcServer.prototype.processResponse = function(uuid, error, data)
 {
     if(this.entities[uuid]) this.entities[uuid].processResponse(error, data);
-    else this.logger.warn('JSON-RPC server: unknown consumer');
+    else this.logger.warn('JSON-RPC server: attempt to process response for unknown consumer');
 };
 
 module.exports = RpcServer;
